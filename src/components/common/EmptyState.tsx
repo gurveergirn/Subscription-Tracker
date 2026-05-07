@@ -16,18 +16,8 @@ export default function EmptyState({ onAdd }: Props) {
         }}
       />
 
-      <div className="relative inline-flex">
-        <div
-          className="absolute -left-16 top-2 w-24 h-32 rounded-2xl border border-border-subtle bg-surface-2 -rotate-12 opacity-70"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute -right-16 top-4 w-24 h-32 rounded-2xl border border-border-subtle bg-surface-2 rotate-12 opacity-70"
-          aria-hidden="true"
-        />
-        <div className="relative grid place-items-center size-20 rounded-3xl bg-accent/15 border border-accent/30 text-accent">
-          <Sparkles className="size-9" />
-        </div>
+      <div className="relative inline-grid place-items-center size-20 rounded-3xl bg-accent/15 border border-accent/30 text-accent">
+        <Sparkles className="size-9" />
       </div>
 
       <h2 className="mt-8 text-2xl font-semibold tracking-tight">

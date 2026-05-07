@@ -1,4 +1,4 @@
-import { Pause, Sparkles, AlertTriangle } from "lucide-react"
+import { Pause, Sparkles, AlertTriangle, Eye } from "lucide-react"
 import clsx from "clsx"
 import BrandLogo from "../common/BrandLogo"
 import { cycleSuffix, normalizeToMonthly } from "../../lib/money"
@@ -26,7 +26,7 @@ export default function SubscriptionCard({ subscription: s, onClick }: Props) {
       type="button"
       onClick={onClick}
       className={clsx(
-        "relative w-full text-left rounded-2xl border bg-surface p-4 overflow-hidden transition-all hover:bg-surface-2/60 hover:-translate-y-0.5",
+        "group relative w-full text-left rounded-2xl border bg-surface p-4 overflow-hidden transition-all hover:-translate-y-0.5",
         s.status === "paused" && "opacity-60",
       )}
       style={{ borderColor: `${s.brandColor}40` }}
@@ -44,63 +44,74 @@ export default function SubscriptionCard({ subscription: s, onClick }: Props) {
         style={{ background: s.brandColor }}
       />
 
-      <div className="relative flex items-start gap-3">
-        <BrandLogo
-          name={s.name}
-          url={s.logoUrl}
-          brandColor={s.brandColor}
-          size={44}
-        />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-medium truncate">{s.name}</span>
-            {s.status === "paused" && (
-              <Badge tone="muted" icon={<Pause className="size-3" />}>
-                Paused
-              </Badge>
-            )}
-            {s.status === "trial" && (
-              <Badge tone="warning" icon={<Sparkles className="size-3" />}>
-                Trial
-              </Badge>
+      <div className="transition duration-200 group-hover:blur-[3px] group-hover:opacity-30">
+        <div className="relative flex items-start gap-3">
+          <BrandLogo
+            name={s.name}
+            url={s.logoUrl}
+            brandColor={s.brandColor}
+            size={44}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <span className="font-medium truncate">{s.name}</span>
+              {s.status === "paused" && (
+                <Badge tone="muted" icon={<Pause className="size-3" />}>
+                  Paused
+                </Badge>
+              )}
+              {s.status === "trial" && (
+                <Badge tone="warning" icon={<Sparkles className="size-3" />}>
+                  Trial
+                </Badge>
+              )}
+            </div>
+            <div className="text-xs text-text-muted truncate">{s.tierName}</div>
+          </div>
+        </div>
+
+        <div className="relative mt-4 flex items-end justify-between gap-3">
+          <div>
+            <div className="text-xl font-semibold tabular">
+              {s.cost === 0 ? "Free" : `${format(s.cost)}`}
+              {s.cost > 0 && (
+                <span className="text-sm font-normal text-text-muted">
+                  {cycleSuffix(s.billingCycle)}
+                </span>
+              )}
+            </div>
+            {isYearly && s.cost > 0 && (
+              <div className="text-xs text-text-muted tabular">
+                ~{format(monthlyEq)}/mo
+              </div>
             )}
           </div>
-          <div className="text-xs text-text-muted truncate">{s.tierName}</div>
+          <div className="text-right">
+            <div className="text-[10px] text-text-muted uppercase tracking-wide">
+              Renews
+            </div>
+            <div
+              className={clsx(
+                "text-xs",
+                upcomingSoon
+                  ? "text-warning inline-flex items-center gap-1"
+                  : "text-text-secondary",
+              )}
+            >
+              {upcomingSoon && <AlertTriangle className="size-3" />}
+              {renewalLabel(s.renewalDate)}
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="relative mt-4 flex items-end justify-between gap-3">
-        <div>
-          <div className="text-xl font-semibold tabular">
-            {s.cost === 0 ? "Free" : `${format(s.cost)}`}
-            {s.cost > 0 && (
-              <span className="text-sm font-normal text-text-muted">
-                {cycleSuffix(s.billingCycle)}
-              </span>
-            )}
-          </div>
-          {isYearly && s.cost > 0 && (
-            <div className="text-xs text-text-muted tabular">
-              ~{format(monthlyEq)}/mo
-            </div>
-          )}
-        </div>
-        <div className="text-right">
-          <div className="text-[10px] text-text-muted uppercase tracking-wide">
-            Renews
-          </div>
-          <div
-            className={clsx(
-              "text-xs",
-              upcomingSoon
-                ? "text-warning inline-flex items-center gap-1"
-                : "text-text-secondary",
-            )}
-          >
-            {upcomingSoon && <AlertTriangle className="size-3" />}
-            {renewalLabel(s.renewalDate)}
-          </div>
-        </div>
+      <div className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition duration-200">
+        <span
+          className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-surface-2/90 backdrop-blur-md px-3.5 py-2 text-sm font-medium text-text-primary shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+        >
+          <Eye className="size-4" />
+          View subscription
+        </span>
       </div>
     </button>
   )
