@@ -3,15 +3,18 @@ import { Plus } from "lucide-react"
 import TopBar from "../components/layout/TopBar"
 import AddSubscriptionModal from "../components/add/AddSubscriptionModal"
 import ActiveSubscriptions from "../components/dashboard/ActiveSubscriptions"
+import SubscriptionDetailDrawer from "../components/detail/SubscriptionDetailDrawer"
 import { useSubscriptions } from "../hooks/useSubscriptions"
 import { formatMoney, normalizeToYearly } from "../lib/money"
-import type { Subscription, SubscriptionInput } from "../types"
+import type { SubscriptionInput } from "../types"
 
 export default function DashboardPage() {
-  const { subscriptions, loading, add } = useSubscriptions()
+  const { subscriptions, loading, add, update, remove } = useSubscriptions()
   const [addOpen, setAddOpen] = useState(false)
-  // Detail drawer wired in step 9.
-  const [, setSelected] = useState<Subscription | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = selectedId
+    ? (subscriptions.find((s) => s.id === selectedId) ?? null)
+    : null
 
   const existingServiceIds = useMemo(
     () =>
@@ -87,7 +90,7 @@ export default function DashboardPage() {
       ) : (
         <ActiveSubscriptions
           subscriptions={subscriptions}
-          onSelect={setSelected}
+          onSelect={(s) => setSelectedId(s.id)}
         />
       )}
 
@@ -96,6 +99,13 @@ export default function DashboardPage() {
         onClose={() => setAddOpen(false)}
         onAdd={handleAdd}
         existingServiceIds={existingServiceIds}
+      />
+
+      <SubscriptionDetailDrawer
+        subscription={selected}
+        onClose={() => setSelectedId(null)}
+        onUpdate={update}
+        onDelete={remove}
       />
     </>
   )
