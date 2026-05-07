@@ -1,16 +1,46 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { Plus } from "lucide-react"
 import TopBar from "../components/layout/TopBar"
 import AddSubscriptionModal from "../components/add/AddSubscriptionModal"
-import type { SubscriptionInput } from "../types"
+import ActiveSubscriptions from "../components/dashboard/ActiveSubscriptions"
+import { useSubscriptions } from "../hooks/useSubscriptions"
+import { formatMoney, normalizeToYearly } from "../lib/money"
+import type { Subscription, SubscriptionInput } from "../types"
 
 export default function DashboardPage() {
+  const { subscriptions, loading, add } = useSubscriptions()
   const [addOpen, setAddOpen] = useState(false)
+  // Detail drawer wired in step 9.
+  const [, setSelected] = useState<Subscription | null>(null)
+
+  const existingServiceIds = useMemo(
+    () =>
+      subscriptions
+        .map((s) => s.serviceId)
+        .filter((id): id is string => Boolean(id)),
+    [subscriptions],
+  )
+
+  const counted = useMemo(
+    () => subscriptions.filter((s) => s.status === "active"),
+    [subscriptions],
+  )
+
+  const totalMonthly = counted.reduce((sum, s) => sum + s.monthlyEquivalent, 0)
+  const totalYearly = counted.reduce(
+    (sum, s) => sum + normalizeToYearly(s.cost, s.billingCycle),
+    0,
+  )
 
   async function handleAdd(input: SubscriptionInput) {
-    // Wired to Firestore in step 7.
-    console.log("Add subscription:", input)
+    await add(input)
   }
+
+  const stats = [
+    { label: "Monthly", value: formatMoney(totalMonthly) },
+    { label: "Yearly", value: formatMoney(totalYearly) },
+    { label: "Active", value: String(counted.length) },
+  ]
 
   return (
     <>
@@ -30,11 +60,7 @@ export default function DashboardPage() {
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
-        {[
-          { label: "Monthly", value: "$0.00" },
-          { label: "Yearly", value: "$0.00" },
-          { label: "Active", value: "0" },
-        ].map((s) => (
+        {stats.map((s) => (
           <div
             key={s.label}
             className="rounded-2xl border border-border-subtle bg-surface p-5"
@@ -47,17 +73,29 @@ export default function DashboardPage() {
         ))}
       </section>
 
-      <section className="rounded-2xl border border-border-subtle bg-surface p-10 text-center">
-        <h2 className="text-lg font-medium">No subscriptions yet</h2>
-        <p className="mt-1 text-sm text-text-secondary">
-          Add your first subscription to see totals, charts, and insights.
-        </p>
-      </section>
+      {loading ? (
+        <div className="rounded-2xl border border-border-subtle bg-surface p-10 text-center text-sm text-text-secondary">
+          Loading subscriptions...
+        </div>
+      ) : subscriptions.length === 0 ? (
+        <section className="rounded-2xl border border-border-subtle bg-surface p-10 text-center">
+          <h2 className="text-lg font-medium">No subscriptions yet</h2>
+          <p className="mt-1 text-sm text-text-secondary">
+            Add your first subscription to see totals, charts, and insights.
+          </p>
+        </section>
+      ) : (
+        <ActiveSubscriptions
+          subscriptions={subscriptions}
+          onSelect={setSelected}
+        />
+      )}
 
       <AddSubscriptionModal
         open={addOpen}
         onClose={() => setAddOpen(false)}
         onAdd={handleAdd}
+        existingServiceIds={existingServiceIds}
       />
     </>
   )
