@@ -1,73 +1,54 @@
-# React + TypeScript + Vite
+# Subscription Tracker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A premium dark-themed web app for tracking every subscription you pay for, seeing your total monthly and yearly spend, and getting smart insights about renewals, redundant services, and annual savings opportunities.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React + TypeScript + Vite**
+- **Tailwind CSS v4** (dark-only, custom design tokens)
+- **Firebase** — Authentication (Google + Email/Password) and Firestore
+- **Recharts** for the spending-by-category donut chart
+- **Clearbit Logo API** for real brand logos by domain
+- Deployed on **Vercel**
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Curated catalog of 70+ popular services across 13 categories with real current prices
+- Click a service card → it expands inline to show all tiers; pick one to add it
+- Custom service form for anything not in the catalog
+- Live monthly + yearly spend totals
+- Donut chart of spending by category
+- Upcoming renewals strip with warnings for renewals in the next 7 days
+- Smart insights: duplicate detection, redundancy in same category, annual savings tips, trial-expiring alerts
+- Free trial tracker with conversion warning when the trial is about to end
+- Pause / resume any subscription
+- Currency selector (USD / CAD / EUR / GBP)
+- Monthly snapshots auto-recorded for future trend analysis
+- Per-user data with Firebase Auth + Firestore security rules
+- Responsive: works on mobile and desktop
 
-## Expanding the ESLint configuration
+## Run locally
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Install deps:
+   ```
+   npm install
+   ```
+2. Copy `.env.example` to `.env.local` and fill in your Firebase config from
+   Firebase Console → Project settings → "Your apps" → SDK setup and configuration.
+3. In the Firebase console:
+   - Enable **Email/Password** and **Google** sign-in providers under
+     **Authentication → Sign-in method**.
+   - Create a Firestore database.
+   - Paste the contents of `firestore.rules` into **Firestore → Rules** and publish.
+4. Start the dev server:
+   ```
+   npm run dev
+   ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Deploy to Vercel
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1. Push the repo to GitHub.
+2. In Vercel → **New Project** → import the repo (Vite auto-detected).
+3. Add the same `VITE_FIREBASE_*` env vars from `.env.local` to the Vercel project settings.
+4. After the first deploy, copy the Vercel preview/production domain into Firebase
+   Console → Authentication → Settings → **Authorized domains**.
