@@ -40,7 +40,11 @@ export default function AddSubscriptionModal({
   }, [search, activeCategory])
 
   async function handleAdd(input: SubscriptionInput) {
-    await onAdd(input)
+    try {
+      await onAdd(input)
+    } catch {
+      return
+    }
     setExpandedId(null)
     setView("browse")
     setSearch("")

@@ -95,6 +95,8 @@ export default function SubscriptionDetailDrawer({
         notes,
       })
       setDirty(false)
+    } catch {
+      // Toast shown by parent.
     } finally {
       setSaving(false)
     }
@@ -108,6 +110,8 @@ export default function SubscriptionDetailDrawer({
     try {
       await onUpdate(subscription.id, { status: next })
       setStatus(next)
+    } catch {
+      // Toast shown by parent.
     } finally {
       setSaving(false)
     }
@@ -120,6 +124,8 @@ export default function SubscriptionDetailDrawer({
     try {
       await onDelete(subscription.id)
       onClose()
+    } catch {
+      // Toast shown by parent.
     } finally {
       setSaving(false)
     }

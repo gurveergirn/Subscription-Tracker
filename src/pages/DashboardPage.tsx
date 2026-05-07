@@ -9,6 +9,9 @@ import CategoryDonutChart from "../components/dashboard/CategoryDonutChart"
 import SmartInsightsPanel from "../components/dashboard/SmartInsightsPanel"
 import UpcomingRenewals from "../components/dashboard/UpcomingRenewals"
 import SubscriptionDetailDrawer from "../components/detail/SubscriptionDetailDrawer"
+import EmptyState from "../components/common/EmptyState"
+import { DashboardSkeleton } from "../components/common/Skeleton"
+import { useToast } from "../components/common/Toast"
 import { useSubscriptions } from "../hooks/useSubscriptions"
 import { normalizeToYearly } from "../lib/money"
 import { useMoney } from "../lib/currency"
@@ -17,18 +20,18 @@ import type { SubscriptionInput } from "../types"
 export default function DashboardPage() {
   const { user } = useAuth()
   const { format } = useMoney()
+  const toast = useToast()
   const { subscriptions, loading, add, update, remove } = useSubscriptions()
   const [addOpen, setAddOpen] = useState(false)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = selectedId
+    ? (subscriptions.find((s) => s.id === selectedId) ?? null)
+    : null
 
   useEffect(() => {
     if (loading || !user) return
     upsertCurrentMonthSnapshot(user.uid, subscriptions).catch(() => {})
   }, [loading, subscriptions, user])
-
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const selected = selectedId
-    ? (subscriptions.find((s) => s.id === selectedId) ?? null)
-    : null
 
   const existingServiceIds = useMemo(
     () =>
@@ -50,7 +53,37 @@ export default function DashboardPage() {
   )
 
   async function handleAdd(input: SubscriptionInput) {
-    await add(input)
+    try {
+      await add(input)
+      toast.success(`${input.name} added`)
+    } catch {
+      toast.error("Couldn't add subscription. Please try again.")
+      throw new Error("add failed")
+    }
+  }
+
+  async function handleUpdate(
+    id: string,
+    patch: Partial<SubscriptionInput>,
+  ) {
+    try {
+      await update(id, patch)
+      toast.success("Saved")
+    } catch {
+      toast.error("Couldn't save changes.")
+      throw new Error("update failed")
+    }
+  }
+
+  async function handleDelete(id: string) {
+    const sub = subscriptions.find((s) => s.id === id)
+    try {
+      await remove(id)
+      toast.success(`${sub?.name ?? "Subscription"} deleted`)
+    } catch {
+      toast.error("Couldn't delete subscription.")
+      throw new Error("delete failed")
+    }
   }
 
   const stats = [
@@ -58,9 +91,6 @@ export default function DashboardPage() {
     { label: "Yearly", value: format(totalYearly) },
     { label: "Active", value: String(counted.length) },
   ]
-
-  const showDashboardSections =
-    !loading && subscriptions.length > 0
 
   return (
     <>
@@ -79,56 +109,49 @@ export default function DashboardPage() {
         }
       />
 
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            className="rounded-2xl border border-border-subtle bg-surface p-5"
-          >
-            <div className="text-xs text-text-muted uppercase tracking-wide">
-              {s.label}
+      {loading ? (
+        <DashboardSkeleton />
+      ) : subscriptions.length === 0 ? (
+        <EmptyState onAdd={() => setAddOpen(true)} />
+      ) : (
+        <>
+          <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+            {stats.map((s) => (
+              <div
+                key={s.label}
+                className="rounded-2xl border border-border-subtle bg-surface p-5"
+              >
+                <div className="text-xs text-text-muted uppercase tracking-wide">
+                  {s.label}
+                </div>
+                <div className="mt-1 text-3xl font-semibold tabular">
+                  {s.value}
+                </div>
+              </div>
+            ))}
+          </section>
+
+          <div className="space-y-6">
+            <UpcomingRenewals
+              subscriptions={subscriptions}
+              onSelect={(s) => setSelectedId(s.id)}
+            />
+
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+              <div className="lg:col-span-3">
+                <CategoryDonutChart subscriptions={subscriptions} />
+              </div>
+              <div className="lg:col-span-2">
+                <SmartInsightsPanel subscriptions={subscriptions} />
+              </div>
             </div>
-            <div className="mt-1 text-3xl font-semibold tabular">{s.value}</div>
+
+            <ActiveSubscriptions
+              subscriptions={subscriptions}
+              onSelect={(s) => setSelectedId(s.id)}
+            />
           </div>
-        ))}
-      </section>
-
-      {loading && (
-        <div className="rounded-2xl border border-border-subtle bg-surface p-10 text-center text-sm text-text-secondary">
-          Loading subscriptions...
-        </div>
-      )}
-
-      {!loading && subscriptions.length === 0 && (
-        <section className="rounded-2xl border border-border-subtle bg-surface p-10 text-center">
-          <h2 className="text-lg font-medium">No subscriptions yet</h2>
-          <p className="mt-1 text-sm text-text-secondary">
-            Add your first subscription to see totals, charts, and insights.
-          </p>
-        </section>
-      )}
-
-      {showDashboardSections && (
-        <div className="space-y-6">
-          <UpcomingRenewals
-            subscriptions={subscriptions}
-            onSelect={(s) => setSelectedId(s.id)}
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-            <div className="lg:col-span-3">
-              <CategoryDonutChart subscriptions={subscriptions} />
-            </div>
-            <div className="lg:col-span-2">
-              <SmartInsightsPanel subscriptions={subscriptions} />
-            </div>
-          </div>
-
-          <ActiveSubscriptions
-            subscriptions={subscriptions}
-            onSelect={(s) => setSelectedId(s.id)}
-          />
-        </div>
+        </>
       )}
 
       <AddSubscriptionModal
@@ -141,8 +164,8 @@ export default function DashboardPage() {
       <SubscriptionDetailDrawer
         subscription={selected}
         onClose={() => setSelectedId(null)}
-        onUpdate={update}
-        onDelete={remove}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
       />
     </>
   )

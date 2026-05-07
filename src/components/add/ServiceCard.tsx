@@ -67,6 +67,8 @@ export default function ServiceCard({
         trialEndsAt: isTrial ? new Date(trialEnd) : null,
         notes: "",
       })
+    } catch {
+      // Toast shown by parent.
     } finally {
       setSubmitting(false)
     }

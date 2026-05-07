@@ -3,6 +3,7 @@ import { LogOut, Trash2, Check, Loader2 } from "lucide-react"
 import clsx from "clsx"
 import TopBar from "../components/layout/TopBar"
 import ConfirmDialog from "../components/common/ConfirmDialog"
+import { useToast } from "../components/common/Toast"
 import { useAuth } from "../lib/auth"
 import { useCurrency } from "../lib/currency"
 import { auth, db } from "../lib/firebase"
@@ -26,9 +27,20 @@ const currencies: { value: Currency; label: string; description: string }[] = [
 export default function SettingsPage() {
   const { user, signOut } = useAuth()
   const { currency, setCurrency } = useCurrency()
+  const toast = useToast()
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState("")
+
+  async function handleCurrencyChange(c: typeof currency) {
+    if (c === currency) return
+    try {
+      await setCurrency(c)
+      toast.success(`Currency set to ${c}`)
+    } catch {
+      toast.error("Couldn't update currency.")
+    }
+  }
 
   async function handleDeleteAccount() {
     setConfirmDelete(false)
@@ -89,7 +101,7 @@ export default function SettingsPage() {
                 <button
                   key={c.value}
                   type="button"
-                  onClick={() => setCurrency(c.value)}
+                  onClick={() => handleCurrencyChange(c.value)}
                   className={clsx(
                     "rounded-xl border px-3 py-3 text-left transition",
                     active

@@ -53,6 +53,8 @@ export default function CustomServiceForm({ onBack, onAdd }: Props) {
         trialEndsAt: null,
         notes: "",
       })
+    } catch {
+      // Toast shown by parent.
     } finally {
       setSubmitting(false)
     }
