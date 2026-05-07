@@ -29,5 +29,4 @@ dist-ssr
 .env.example
 firestore.rules
 PLAN.md
-README.md
 .claude/
