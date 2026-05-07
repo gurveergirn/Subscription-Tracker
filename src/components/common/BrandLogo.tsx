@@ -1,5 +1,6 @@
 import { useState } from "react"
 import clsx from "clsx"
+import { resolveLogoUrl } from "../../data/services"
 
 type Props = {
   name: string
@@ -28,7 +29,8 @@ export default function BrandLogo({
   rounded = "xl",
 }: Props) {
   const [errored, setErrored] = useState(false)
-  const showFallback = !url || errored
+  const resolvedUrl = resolveLogoUrl(url)
+  const showFallback = !resolvedUrl || errored
   const initial = name.trim().charAt(0).toUpperCase() || "?"
   const radiusClass = {
     lg: "rounded-lg",
@@ -61,7 +63,7 @@ export default function BrandLogo({
 
   return (
     <img
-      src={url}
+      src={resolvedUrl}
       alt={name}
       width={size}
       height={size}
