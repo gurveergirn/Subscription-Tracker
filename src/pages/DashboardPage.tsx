@@ -1,7 +1,17 @@
+import { useState } from "react"
 import { Plus } from "lucide-react"
 import TopBar from "../components/layout/TopBar"
+import AddSubscriptionModal from "../components/add/AddSubscriptionModal"
+import type { SubscriptionInput } from "../types"
 
 export default function DashboardPage() {
+  const [addOpen, setAddOpen] = useState(false)
+
+  async function handleAdd(input: SubscriptionInput) {
+    // Wired to Firestore in step 7.
+    console.log("Add subscription:", input)
+  }
+
   return (
     <>
       <TopBar
@@ -10,6 +20,7 @@ export default function DashboardPage() {
         rightSlot={
           <button
             type="button"
+            onClick={() => setAddOpen(true)}
             className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-white shadow-[0_4px_24px_rgba(124,92,255,0.35)] hover:opacity-90 transition"
           >
             <Plus className="size-4" />
@@ -42,6 +53,12 @@ export default function DashboardPage() {
           Add your first subscription to see totals, charts, and insights.
         </p>
       </section>
+
+      <AddSubscriptionModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onAdd={handleAdd}
+      />
     </>
   )
 }

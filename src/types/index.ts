@@ -71,7 +71,17 @@ export type Subscription = {
   updatedAt: Timestamp
 }
 
-export type SubscriptionInput = Omit<
-  Subscription,
-  "id" | "monthlyEquivalent" | "createdAt" | "updatedAt"
->
+export type SubscriptionInput = {
+  serviceId: string | null
+  name: string
+  logoUrl: string
+  brandColor: string
+  category: Category
+  tierName: string
+  cost: number
+  billingCycle: BillingCycle
+  renewalDate: Date
+  status: SubscriptionStatus
+  trialEndsAt: Date | null
+  notes: string
+}
