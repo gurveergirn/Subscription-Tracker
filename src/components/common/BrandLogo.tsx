@@ -1,6 +1,10 @@
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import clsx from "clsx"
-import { resolveLogoUrl } from "../../data/services"
+import {
+  domainFromLogoUrl,
+  logoCandidatesForDomain,
+  resolveLogoUrl,
+} from "../../data/services"
 
 type Props = {
   name: string
@@ -28,9 +32,21 @@ export default function BrandLogo({
   className,
   rounded = "xl",
 }: Props) {
-  const [errored, setErrored] = useState(false)
-  const resolvedUrl = resolveLogoUrl(url)
-  const showFallback = !resolvedUrl || errored
+  const candidates = useMemo(() => {
+    if (!url) return []
+    const primary = resolveLogoUrl(url)
+    const domain = domainFromLogoUrl(primary)
+    if (domain) return logoCandidatesForDomain(domain)
+    return [primary]
+  }, [url])
+
+  const [attempt, setAttempt] = useState(0)
+  useEffect(() => {
+    setAttempt(0)
+  }, [candidates])
+
+  const currentUrl = candidates[attempt] ?? null
+  const showFallback = !currentUrl
   const initial = name.trim().charAt(0).toUpperCase() || "?"
   const radiusClass = {
     lg: "rounded-lg",
@@ -63,12 +79,13 @@ export default function BrandLogo({
 
   return (
     <img
-      src={resolvedUrl}
+      key={currentUrl}
+      src={currentUrl}
       alt={name}
       width={size}
       height={size}
       loading="lazy"
-      onError={() => setErrored(true)}
+      onError={() => setAttempt((a) => a + 1)}
       className={clsx("shrink-0 object-contain bg-white", radiusClass, className)}
       style={{ width: size, height: size }}
     />

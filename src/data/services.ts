@@ -875,18 +875,42 @@ export function findService(id: string): Service | undefined {
   return SERVICES.find((s) => s.id === id)
 }
 
-// Google's favicon service is more reliable than Clearbit's (now-deprecated) free
-// Logo API. We export under the old name for back-compat with existing call sites.
+// DuckDuckGo's icon service is the most reliable free option in 2026; Clearbit's
+// free Logo API was discontinued, and Google's favicon service can be blocked by
+// privacy extensions. We export under the old name for back-compat.
 export function logoUrlFor(domain: string): string {
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+  return `https://icons.duckduckgo.com/ip3/${domain}.ico`
 }
 
 export const clearbitLogoUrl = logoUrlFor
 
-// Old Firestore docs may have stored Clearbit URLs. Translate them on read.
+// Try to extract the underlying domain from a stored logo URL (Clearbit, Google,
+// or DuckDuckGo formats). Returns null for arbitrary custom URLs.
+export function domainFromLogoUrl(url: string): string | null {
+  const ddg = url.match(/icons\.duckduckgo\.com\/ip3\/(.+?)\.ico/)
+  if (ddg) return ddg[1]
+  const g = url.match(/google\.com\/s2\/favicons\?[^"]*domain=([^&"]+)/)
+  if (g) return decodeURIComponent(g[1])
+  const cb = url.match(/^https:\/\/logo\.clearbit\.com\/(.+)$/)
+  if (cb) return cb[1]
+  return null
+}
+
+// Old Firestore docs may have stored Clearbit URLs (or earlier Google URLs).
+// Translate them to the current preferred provider on read.
 export function resolveLogoUrl(url: string | null | undefined): string {
   if (!url) return ""
-  const m = url.match(/^https:\/\/logo\.clearbit\.com\/(.+)$/)
-  if (m) return logoUrlFor(m[1])
+  const domain = domainFromLogoUrl(url)
+  if (domain) return logoUrlFor(domain)
   return url
+}
+
+// Ordered list of logo sources to try for a domain. BrandLogo walks this list
+// before falling back to initials so a single blocked provider isn't fatal.
+export function logoCandidatesForDomain(domain: string): string[] {
+  return [
+    `https://icons.duckduckgo.com/ip3/${domain}.ico`,
+    `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
+    `https://logo.clearbit.com/${domain}`,
+  ]
 }
