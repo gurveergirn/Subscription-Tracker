@@ -3,6 +3,9 @@ import { Plus } from "lucide-react"
 import TopBar from "../components/layout/TopBar"
 import AddSubscriptionModal from "../components/add/AddSubscriptionModal"
 import ActiveSubscriptions from "../components/dashboard/ActiveSubscriptions"
+import CategoryDonutChart from "../components/dashboard/CategoryDonutChart"
+import SmartInsightsPanel from "../components/dashboard/SmartInsightsPanel"
+import UpcomingRenewals from "../components/dashboard/UpcomingRenewals"
 import SubscriptionDetailDrawer from "../components/detail/SubscriptionDetailDrawer"
 import { useSubscriptions } from "../hooks/useSubscriptions"
 import { formatMoney, normalizeToYearly } from "../lib/money"
@@ -45,6 +48,9 @@ export default function DashboardPage() {
     { label: "Active", value: String(counted.length) },
   ]
 
+  const showDashboardSections =
+    !loading && subscriptions.length > 0
+
   return (
     <>
       <TopBar
@@ -62,7 +68,7 @@ export default function DashboardPage() {
         }
       />
 
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         {stats.map((s) => (
           <div
             key={s.label}
@@ -76,22 +82,42 @@ export default function DashboardPage() {
         ))}
       </section>
 
-      {loading ? (
+      {loading && (
         <div className="rounded-2xl border border-border-subtle bg-surface p-10 text-center text-sm text-text-secondary">
           Loading subscriptions...
         </div>
-      ) : subscriptions.length === 0 ? (
+      )}
+
+      {!loading && subscriptions.length === 0 && (
         <section className="rounded-2xl border border-border-subtle bg-surface p-10 text-center">
           <h2 className="text-lg font-medium">No subscriptions yet</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Add your first subscription to see totals, charts, and insights.
           </p>
         </section>
-      ) : (
-        <ActiveSubscriptions
-          subscriptions={subscriptions}
-          onSelect={(s) => setSelectedId(s.id)}
-        />
+      )}
+
+      {showDashboardSections && (
+        <div className="space-y-6">
+          <UpcomingRenewals
+            subscriptions={subscriptions}
+            onSelect={(s) => setSelectedId(s.id)}
+          />
+
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="lg:col-span-3">
+              <CategoryDonutChart subscriptions={subscriptions} />
+            </div>
+            <div className="lg:col-span-2">
+              <SmartInsightsPanel subscriptions={subscriptions} />
+            </div>
+          </div>
+
+          <ActiveSubscriptions
+            subscriptions={subscriptions}
+            onSelect={(s) => setSelectedId(s.id)}
+          />
+        </div>
       )}
 
       <AddSubscriptionModal
