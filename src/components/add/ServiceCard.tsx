@@ -3,7 +3,8 @@ import { AlertTriangle, ChevronRight, Loader2, Plus } from "lucide-react"
 import clsx from "clsx"
 import BrandLogo from "../common/BrandLogo"
 import { clearbitLogoUrl } from "../../data/services"
-import { cycleSuffix, formatMoney } from "../../lib/money"
+import { cycleSuffix } from "../../lib/money"
+import { useMoney } from "../../lib/currency"
 import type { Service, ServiceTier, SubscriptionInput } from "../../types"
 
 type Props = {
@@ -41,6 +42,7 @@ export default function ServiceCard({
   const [isTrial, setIsTrial] = useState(false)
   const [trialEnd, setTrialEnd] = useState(defaultTrialEndDate)
   const [submitting, setSubmitting] = useState(false)
+  const { format } = useMoney()
 
   function pickTier(tier: ServiceTier) {
     setSelectedTier(tier)
@@ -158,7 +160,7 @@ export default function ServiceCard({
                     <div className="text-xs text-text-secondary tabular">
                       {tier.price === 0
                         ? "Free"
-                        : `${formatMoney(tier.price)}${cycleSuffix(tier.cycle)}`}
+                        : `${format(tier.price)}${cycleSuffix(tier.cycle)}`}
                     </div>
                   </button>
                 </li>

@@ -8,6 +8,7 @@ import {
 } from "lucide-react"
 import clsx from "clsx"
 import { computeInsights, type Insight } from "../../lib/insights"
+import { useMoney } from "../../lib/currency"
 import type { Subscription } from "../../types"
 
 type Props = {
@@ -15,7 +16,11 @@ type Props = {
 }
 
 export default function SmartInsightsPanel({ subscriptions }: Props) {
-  const insights = useMemo(() => computeInsights(subscriptions), [subscriptions])
+  const { format } = useMoney()
+  const insights = useMemo(
+    () => computeInsights(subscriptions, format),
+    [subscriptions, format],
+  )
 
   return (
     <section className="rounded-2xl border border-border-subtle bg-surface p-5 h-full">

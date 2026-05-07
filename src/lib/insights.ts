@@ -1,7 +1,9 @@
 import { findService } from "../data/services"
 import type { Category, Subscription } from "../types"
 import { daysUntil } from "./dates"
-import { cycleSuffix, formatMoney } from "./money"
+import { cycleSuffix } from "./money"
+
+type FormatMoney = (usd: number) => string
 
 export type InsightKind =
   | "renewal"
@@ -27,7 +29,10 @@ const REDUNDANT_CATEGORIES: Category[] = [
   "Storage & Productivity",
 ]
 
-export function computeInsights(subs: Subscription[]): Insight[] {
+export function computeInsights(
+  subs: Subscription[],
+  format: FormatMoney,
+): Insight[] {
   const insights: Insight[] = []
   const active = subs.filter(
     (s) => s.status === "active" || s.status === "trial",
@@ -60,7 +65,7 @@ export function computeInsights(subs: Subscription[]): Insight[] {
       kind: "trial",
       tone: "warning",
       title: `${s.name} trial ends ${when}`,
-      detail: `Will convert to ${formatMoney(s.cost)}${cycleSuffix(s.billingCycle)} unless you cancel.`,
+      detail: `Will convert to ${format(s.cost)}${cycleSuffix(s.billingCycle)} unless you cancel.`,
     })
   }
 
@@ -92,8 +97,8 @@ export function computeInsights(subs: Subscription[]): Insight[] {
         id: `savings-${s.id}`,
         kind: "savings",
         tone: "success",
-        title: `Save ${formatMoney(savings)}/yr on ${s.name}`,
-        detail: `Switch to ${yearlyTier.name} (${formatMoney(yearlyTier.price)}/yr).`,
+        title: `Save ${format(savings)}/yr on ${s.name}`,
+        detail: `Switch to ${yearlyTier.name} (${format(yearlyTier.price)}/yr).`,
       })
     }
   }

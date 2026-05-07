@@ -2,7 +2,8 @@ import { useMemo } from "react"
 import { CalendarClock } from "lucide-react"
 import clsx from "clsx"
 import BrandLogo from "../common/BrandLogo"
-import { cycleSuffix, formatMoney } from "../../lib/money"
+import { cycleSuffix } from "../../lib/money"
+import { useMoney } from "../../lib/currency"
 import { daysUntil, renewalLabel } from "../../lib/dates"
 import type { Subscription } from "../../types"
 
@@ -12,6 +13,7 @@ type Props = {
 }
 
 export default function UpcomingRenewals({ subscriptions, onSelect }: Props) {
+  const { format } = useMoney()
   const upcoming = useMemo(() => {
     return subscriptions
       .filter((s) => s.status === "active")
@@ -69,7 +71,7 @@ export default function UpcomingRenewals({ subscriptions, onSelect }: Props) {
                 <span className="tabular text-sm">
                   {s.cost === 0
                     ? "Free"
-                    : `${formatMoney(s.cost)}${cycleSuffix(s.billingCycle)}`}
+                    : `${format(s.cost)}${cycleSuffix(s.billingCycle)}`}
                 </span>
               </div>
             </button>

@@ -1,7 +1,8 @@
 import { Pause, Sparkles, AlertTriangle } from "lucide-react"
 import clsx from "clsx"
 import BrandLogo from "../common/BrandLogo"
-import { cycleSuffix, formatMoney, normalizeToMonthly } from "../../lib/money"
+import { cycleSuffix, normalizeToMonthly } from "../../lib/money"
+import { useMoney } from "../../lib/currency"
 import { daysUntil, renewalLabel } from "../../lib/dates"
 import type { Subscription } from "../../types"
 
@@ -11,6 +12,7 @@ type Props = {
 }
 
 export default function SubscriptionCard({ subscription: s, onClick }: Props) {
+  const { format } = useMoney()
   const days = daysUntil(s.renewalDate)
   const upcomingSoon = s.status === "active" && days >= 0 && days <= 7
   const isYearly = s.billingCycle === "yearly"
@@ -70,7 +72,7 @@ export default function SubscriptionCard({ subscription: s, onClick }: Props) {
       <div className="relative mt-4 flex items-end justify-between gap-3">
         <div>
           <div className="text-xl font-semibold tabular">
-            {s.cost === 0 ? "Free" : `${formatMoney(s.cost)}`}
+            {s.cost === 0 ? "Free" : `${format(s.cost)}`}
             {s.cost > 0 && (
               <span className="text-sm font-normal text-text-muted">
                 {cycleSuffix(s.billingCycle)}
@@ -79,7 +81,7 @@ export default function SubscriptionCard({ subscription: s, onClick }: Props) {
           </div>
           {isYearly && s.cost > 0 && (
             <div className="text-xs text-text-muted tabular">
-              ~{formatMoney(monthlyEq)}/mo
+              ~{format(monthlyEq)}/mo
             </div>
           )}
         </div>

@@ -1,6 +1,8 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Plus } from "lucide-react"
 import TopBar from "../components/layout/TopBar"
+import { useAuth } from "../lib/auth"
+import { upsertCurrentMonthSnapshot } from "../lib/snapshots"
 import AddSubscriptionModal from "../components/add/AddSubscriptionModal"
 import ActiveSubscriptions from "../components/dashboard/ActiveSubscriptions"
 import CategoryDonutChart from "../components/dashboard/CategoryDonutChart"
@@ -8,12 +10,21 @@ import SmartInsightsPanel from "../components/dashboard/SmartInsightsPanel"
 import UpcomingRenewals from "../components/dashboard/UpcomingRenewals"
 import SubscriptionDetailDrawer from "../components/detail/SubscriptionDetailDrawer"
 import { useSubscriptions } from "../hooks/useSubscriptions"
-import { formatMoney, normalizeToYearly } from "../lib/money"
+import { normalizeToYearly } from "../lib/money"
+import { useMoney } from "../lib/currency"
 import type { SubscriptionInput } from "../types"
 
 export default function DashboardPage() {
+  const { user } = useAuth()
+  const { format } = useMoney()
   const { subscriptions, loading, add, update, remove } = useSubscriptions()
   const [addOpen, setAddOpen] = useState(false)
+
+  useEffect(() => {
+    if (loading || !user) return
+    upsertCurrentMonthSnapshot(user.uid, subscriptions).catch(() => {})
+  }, [loading, subscriptions, user])
+
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const selected = selectedId
     ? (subscriptions.find((s) => s.id === selectedId) ?? null)
@@ -43,8 +54,8 @@ export default function DashboardPage() {
   }
 
   const stats = [
-    { label: "Monthly", value: formatMoney(totalMonthly) },
-    { label: "Yearly", value: formatMoney(totalYearly) },
+    { label: "Monthly", value: format(totalMonthly) },
+    { label: "Yearly", value: format(totalYearly) },
     { label: "Active", value: String(counted.length) },
   ]
 

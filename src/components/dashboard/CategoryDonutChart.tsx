@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { PieChart as PieIcon } from "lucide-react"
 import { CATEGORY_COLOR } from "../../lib/categoryColors"
-import { formatMoney } from "../../lib/money"
+import { useMoney } from "../../lib/currency"
 import type { Subscription } from "../../types"
 
 type Props = {
@@ -12,6 +12,7 @@ type Props = {
 type Slice = { name: string; value: number; color: string }
 
 export default function CategoryDonutChart({ subscriptions }: Props) {
+  const { format } = useMoney()
   const slices = useMemo<Slice[]>(() => {
     const map = new Map<string, number>()
     for (const s of subscriptions) {
@@ -70,7 +71,7 @@ export default function CategoryDonutChart({ subscriptions }: Props) {
                   }}
                   itemStyle={{ color: "#f5f5f7" }}
                   labelStyle={{ color: "#9c9ca3" }}
-                  formatter={(value) => formatMoney(Number(value)) + "/mo"}
+                  formatter={(value) => format(Number(value)) + "/mo"}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -80,7 +81,7 @@ export default function CategoryDonutChart({ subscriptions }: Props) {
                   Per month
                 </div>
                 <div className="text-2xl font-semibold tabular">
-                  {formatMoney(total)}
+                  {format(total)}
                 </div>
               </div>
             </div>
@@ -105,7 +106,7 @@ export default function CategoryDonutChart({ subscriptions }: Props) {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="tabular text-text-primary">
-                      {formatMoney(s.value)}
+                      {format(s.value)}
                     </span>
                     <span className="tabular text-text-muted text-xs w-10 text-right">
                       {pct.toFixed(0)}%

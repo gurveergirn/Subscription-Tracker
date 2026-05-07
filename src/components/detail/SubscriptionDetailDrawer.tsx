@@ -12,7 +12,8 @@ import {
   type SubscriptionInput,
   type SubscriptionStatus,
 } from "../../types"
-import { cycleSuffix, formatMoney, normalizeToMonthly } from "../../lib/money"
+import { cycleSuffix, normalizeToMonthly } from "../../lib/money"
+import { useMoney } from "../../lib/currency"
 import { toDateInputValue } from "../../lib/dates"
 
 type Props = {
@@ -47,6 +48,7 @@ export default function SubscriptionDetailDrawer({
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [dirty, setDirty] = useState(false)
+  const { format } = useMoney()
 
   useEffect(() => {
     if (!subscription) return
@@ -157,7 +159,7 @@ export default function SubscriptionDetailDrawer({
 
           <div className="rounded-xl border border-border-subtle bg-surface-2/40 p-4">
             <div className="text-3xl font-semibold tabular">
-              {parseFloat(cost) === 0 ? "Free" : formatMoney(parseFloat(cost) || 0)}
+              {parseFloat(cost) === 0 ? "Free" : format(parseFloat(cost) || 0)}
               {parseFloat(cost) > 0 && (
                 <span className="text-base font-normal text-text-muted">
                   {cycleSuffix(cycle)}
@@ -166,7 +168,7 @@ export default function SubscriptionDetailDrawer({
             </div>
             {cycle !== "monthly" && parseFloat(cost) > 0 && (
               <div className="text-xs text-text-muted tabular">
-                ~{formatMoney(monthlyEq)}/mo equivalent
+                ~{format(monthlyEq)}/mo equivalent
               </div>
             )}
           </div>
