@@ -30,3 +30,4 @@ dist-ssr
 firestore.rules
 PLAN.md
 README.md
+.claude/
