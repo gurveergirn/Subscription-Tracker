@@ -10,6 +10,7 @@ type Props = {
   children: ReactNode
   rightSlot?: ReactNode
   className?: string
+  size?: "md" | "lg"
 }
 
 export default function Modal({
@@ -19,6 +20,7 @@ export default function Modal({
   children,
   rightSlot,
   className,
+  size = "lg",
 }: Props) {
   useEffect(() => {
     if (!open) return
@@ -49,7 +51,8 @@ export default function Modal({
       />
       <div
         className={clsx(
-          "relative w-full sm:max-w-3xl sm:max-h-[90vh] bg-app sm:bg-surface sm:border sm:border-border-subtle sm:rounded-2xl flex flex-col overflow-hidden",
+          "relative w-full sm:max-h-[90vh] bg-app sm:bg-surface sm:border sm:border-border-subtle sm:rounded-2xl flex flex-col overflow-hidden",
+          size === "md" ? "sm:max-w-md" : "sm:max-w-3xl",
           className,
         )}
       >

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Pause, Play, Trash2, Loader2 } from "lucide-react"
 import clsx from "clsx"
-import Drawer from "../common/Drawer"
+import Modal from "../common/Modal"
 import ConfirmDialog from "../common/ConfirmDialog"
 import BrandLogo from "../common/BrandLogo"
 import {
@@ -14,7 +14,7 @@ import {
 } from "../../types"
 import { cycleSuffix, normalizeToMonthly } from "../../lib/money"
 import { useMoney } from "../../lib/currency"
-import { toDateInputValue } from "../../lib/dates"
+import { renewalLabel, toDateInputValue } from "../../lib/dates"
 
 type Props = {
   subscription: Subscription | null
@@ -65,13 +65,14 @@ export default function SubscriptionDetailDrawer({
 
   if (!subscription) {
     return (
-      <Drawer open={false} onClose={onClose}>
+      <Modal open={false} onClose={onClose}>
         <div />
-      </Drawer>
+      </Modal>
     )
   }
 
-  const monthlyEq = normalizeToMonthly(parseFloat(cost) || 0, cycle)
+  const numericCost = parseFloat(cost) || 0
+  const monthlyEq = normalizeToMonthly(numericCost, cycle)
 
   function markDirty<T>(setter: (v: T) => void) {
     return (v: T) => {
@@ -86,7 +87,7 @@ export default function SubscriptionDetailDrawer({
     try {
       await onUpdate(subscription.id, {
         tierName,
-        cost: parseFloat(cost) || 0,
+        cost: numericCost,
         billingCycle: cycle,
         renewalDate: new Date(renewal),
         category,
@@ -133,25 +134,48 @@ export default function SubscriptionDetailDrawer({
 
   return (
     <>
-      <Drawer open={open} onClose={onClose} title="Subscription">
+      <Modal open={open} onClose={onClose} title="Subscription" size="md">
         <div className="p-5 space-y-5">
-          <div className="flex items-start gap-3">
-            <BrandLogo
-              name={subscription.name}
-              url={subscription.logoUrl}
-              brandColor={subscription.brandColor}
-              size={48}
-              rounded="2xl"
+          {/* Apple-Wallet-style hero card */}
+          <div
+            className="relative rounded-2xl overflow-hidden border border-white/5"
+            style={{
+              background: `linear-gradient(135deg, ${subscription.brandColor}40 0%, ${subscription.brandColor}15 50%, transparent 100%), #1a1a1d`,
+            }}
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-24 -right-24 size-64 rounded-full opacity-40 blur-3xl"
+              style={{ background: subscription.brandColor }}
             />
-            <div className="min-w-0">
-              <div className="text-base font-semibold truncate">
-                {subscription.name}
-              </div>
-              <div className="text-xs text-text-muted">
-                Status:{" "}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-0 h-px"
+              style={{
+                background: `linear-gradient(90deg, transparent 0%, ${subscription.brandColor} 50%, transparent 100%)`,
+              }}
+            />
+
+            <div className="relative p-5">
+              <div className="flex items-start gap-3">
+                <BrandLogo
+                  name={subscription.name}
+                  url={subscription.logoUrl}
+                  brandColor={subscription.brandColor}
+                  size={48}
+                  rounded="2xl"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="text-base font-semibold truncate">
+                    {subscription.name}
+                  </div>
+                  <div className="text-xs text-text-secondary truncate">
+                    {tierName || subscription.tierName}
+                  </div>
+                </div>
                 <span
                   className={clsx(
-                    "inline-block rounded-full px-2 py-0.5",
+                    "shrink-0 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide",
                     status === "active" && "bg-success/15 text-success",
                     status === "paused" && "bg-surface-2 text-text-secondary",
                     status === "trial" && "bg-warning/15 text-warning",
@@ -160,25 +184,34 @@ export default function SubscriptionDetailDrawer({
                   {status}
                 </span>
               </div>
-            </div>
-          </div>
 
-          <div className="rounded-xl border border-border-subtle bg-surface-2/40 p-4">
-            <div className="text-3xl font-semibold tabular">
-              {parseFloat(cost) === 0 ? "Free" : format(parseFloat(cost) || 0)}
-              {parseFloat(cost) > 0 && (
-                <span className="text-base font-normal text-text-muted">
-                  {cycleSuffix(cycle)}
-                </span>
-              )}
-            </div>
-            {cycle !== "monthly" && parseFloat(cost) > 0 && (
-              <div className="text-xs text-text-muted tabular">
-                ~{format(monthlyEq)}/mo equivalent
+              <div className="mt-6">
+                <div className="text-4xl font-semibold tabular tracking-tight">
+                  {numericCost === 0 ? "Free" : format(numericCost)}
+                  {numericCost > 0 && (
+                    <span className="text-base font-normal text-text-secondary ml-0.5">
+                      {cycleSuffix(cycle)}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-2 flex items-center justify-between text-xs text-text-secondary">
+                  <span>
+                    Renews{" "}
+                    {renewal
+                      ? renewalLabel(new Date(renewal))
+                      : renewalLabel(subscription.renewalDate)}
+                  </span>
+                  {cycle !== "monthly" && numericCost > 0 && (
+                    <span className="tabular">
+                      ~{format(monthlyEq)}/mo
+                    </span>
+                  )}
+                </div>
               </div>
-            )}
+            </div>
           </div>
 
+          {/* Editable fields */}
           <div className="space-y-3">
             <Field label="Tier name">
               <input
@@ -324,7 +357,7 @@ export default function SubscriptionDetailDrawer({
             {dirty ? "Save changes" : "No changes"}
           </button>
         </div>
-      </Drawer>
+      </Modal>
 
       <ConfirmDialog
         open={confirmDelete}
