@@ -78,16 +78,28 @@ export default function BrandLogo({
   }
 
   return (
-    <img
-      key={currentUrl}
-      src={currentUrl}
-      alt={name}
-      width={size}
-      height={size}
-      loading="lazy"
-      onError={() => setAttempt((a) => a + 1)}
-      className={clsx("shrink-0 object-contain bg-white", radiusClass, className)}
-      style={{ width: size, height: size }}
-    />
+    <span
+      className={clsx(
+        "relative inline-block shrink-0 overflow-hidden",
+        radiusClass,
+        className,
+      )}
+      style={{
+        width: size,
+        height: size,
+        background: `linear-gradient(135deg, ${brandColor}33 0%, ${brandColor}14 100%)`,
+      }}
+    >
+      <img
+        key={currentUrl}
+        src={currentUrl}
+        alt={name}
+        width={size}
+        height={size}
+        loading="lazy"
+        onError={() => setAttempt((a) => a + 1)}
+        className="size-full object-contain p-[15%]"
+      />
+    </span>
   )
 }
