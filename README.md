@@ -1,7 +1,10 @@
 # Subscription Tracker
+
 https://subtrack-flax-xi.vercel.app/
 
 A premium dark-themed web app for tracking every subscription you pay for, seeing your total monthly and yearly spend, and getting smart insights about renewals, redundant services, and annual savings opportunities.
+
+![alt text](image.png)
 
 ## Stack
 
